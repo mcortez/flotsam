@@ -117,7 +117,12 @@
         'VoteOnProposal' => '35184372088832',
         /// <summary>Can return group owned objects</summary>
         'ReturnGroupOwned' => '281474976710656'
+		
+		
+        /// <summary>Members are visible to non-owners</summary>
+		, 'RoleMembersVisible' => '140737488355328'
 		);
+	
 	
 	
     $uuidZero = "00000000-0000-0000-0000-000000000000";
@@ -931,6 +936,38 @@
         return $groupResults;
     }
     
+	function canAgentViewRoleMembers( $agentID, $groupID, $roleID )
+	{
+		$sql = " SELECT CASE WHEN min(OwnerRoleMembership.AgentID) IS NOT NULL THEN 1 ELSE 0 END AS IsOwner ";
+		
+		if( $roleID != '' )
+		{
+			$sql .= " , CASE WHEN min(ReqRoleMembership.AgentID)   IS NOT NULL THEN 1 ELSE 0 END AS IsRoleMember ";
+		}
+		
+		$sql .= " FROM osgroup LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID
+                                                                                      AND OwnerRoleMembership.RoleID  = osgroup.OwnerRoleID 
+                                                                                      AND OwnerRoleMembership.AgentID = '$agentID')";
+		
+		if ($roleID != '')
+		{
+			$sql .= "              LEFT JOIN osgrouprolemembership AS ReqRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID
+	                                                                                       AND OwnerRoleMembership.RoleID  = '$roleID' 
+																						   AND OwnerRoleMembership.AgentID = '$agentID')";
+		}
+		
+		$sql .= " WHERE osgroup.GroupID = '$groupID' GROUP BY osgroup.GroupID";	
+		
+        $viewMemberResults = mysql_query($sql, $groupDBCon);
+        if (!$groupmemberResults || (mysql_num_rows($groupmemberResults) != 1))
+        {
+            return false;
+        }
+        
+		$viewMemberInfo = mysql_fetch_assoc($groupmemberResults)		
+		return $viewMemberInfo['IsOwner'] || $viewMemberInfo['IsRoleMember'];
+	}
+	
     function getGroupMembers($params)
     {
 		if( is_array($error = secureRequest($params, FALSE)) )
@@ -938,7 +975,7 @@
 			return $error;
 		}
 		
-        global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
+        global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
         
         $sql = " SELECT osgroupmembership.AgentID"
@@ -964,11 +1001,14 @@
             return array('succeed' => 'false', 'error' => 'No Group Members found', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }
         
+		$roleMembersVisibleBit = $groupPowers['RoleMembersVisible'];
+		$canViewAllGroupRoleMembers = canAgentViewRoleMembers($requestingAgent, $groupID, '');
+		
         $memberResults = array();
         while($memberInfo = mysql_fetch_assoc($groupmemberResults))
         {
             $agentID = $memberInfo['AgentID'];
-            $sql = " SELECT BIT_OR(osrole.Powers) AS AgentPowers"
+            $sql = " SELECT BIT_OR(osrole.Powers) AS AgentPowers, ( BIT_OR(osrole.Powers) & $roleMembersVisibleBit) as MemberVisible"
                   ." FROM osgrouprolemembership JOIN osrole ON (osgrouprolemembership.GroupID = osrole.GroupID AND osgrouprolemembership.RoleID = osrole.RoleID)"
                   ." WHERE osgrouprolemembership.GroupID = '$groupID' AND osgrouprolemembership.AgentID = '$agentID'";
             $memberPowersResult = mysql_query($sql, $groupDBCon);
@@ -979,10 +1019,22 @@
             
             if (mysql_num_rows($groupmemberResults) == 0) 
             {
-                $memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
+				if( canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
+				{
+					$memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
+				} else {
+					// if can't view all group role members and there is no Member Visible bit, then don't return this member's info
+					unset($memberResults[$agentID]);
+				}
             } else {
                 $memberPowersInfo = mysql_fetch_assoc($memberPowersResult);
-                $memberResults[$agentID] = array_merge($memberInfo, $memberPowersInfo);
+				if( $memberPowersInfo['MemberVisible'] || canViewAllGroupRoleMembers  || ($memberResults[$agentID] == $requestingAgent))
+				{
+					$memberResults[$agentID] = array_merge($memberInfo, $memberPowersInfo);
+				} else {
+					// if can't view all group role members and there is no Member Visible bit, then don't return this member's info
+					unset($memberResults[$agentID]);
+				}
             }
         }
         
@@ -1128,15 +1180,18 @@
 		}
 		
 		
-        global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
+        global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
-        // $roleID = $params['RoleID'];
-        
+		
+		
+		$roleMembersVisibleBit = $groupPowers['RoleMembersVisible'];
+		$canViewAllGroupRoleMembers = canAgentViewRoleMembers($requestingAgent, $groupID, '');
+		
         $sql = " SELECT "
               ." osrole.RoleID, osgrouprolemembership.AgentID"
+			  ." , (osrole.Powers & $roleMembersVisibleBit) as MemberVisible"
               ." FROM osrole JOIN osgrouprolemembership ON (osrole.GroupID = osgrouprolemembership.GroupID AND osrole.RoleID = osgrouprolemembership.RoleID)"
               ." WHERE osrole.GroupID = '$groupID'";
-//              ." AND osrole.RoleID = '$roleID'";
               
         $memberResults = mysql_query($sql, $groupDBCon);
         if (!$memberResults) 
@@ -1147,8 +1202,11 @@
         $members = array();
         while($member = mysql_fetch_assoc($memberResults))
         {
-            $Key = $member['AgentID'] . $member['RoleID'];
-            $members[$Key ] = $member;
+			if( $canViewAllGroupRoleMembers || MemberVisible['MemberVisible'] || ($member['AgentID'] == $requestingAgent) )
+			{
+	            $Key = $member['AgentID'] . $member['RoleID'];
+	            $members[$Key ] = $member;
+			}
         }
         
         return $members;
