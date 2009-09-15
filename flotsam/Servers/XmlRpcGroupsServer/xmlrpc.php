@@ -964,7 +964,7 @@
             return false;
         }
         
-		$viewMemberInfo = mysql_fetch_assoc($groupmemberResults)		
+		$viewMemberInfo = mysql_fetch_assoc($groupmemberResults);
 		return $viewMemberInfo['IsOwner'] || $viewMemberInfo['IsRoleMember'];
 	}
 	
@@ -1202,7 +1202,7 @@
         $members = array();
         while($member = mysql_fetch_assoc($memberResults))
         {
-			if( $canViewAllGroupRoleMembers || MemberVisible['MemberVisible'] || ($member['AgentID'] == $requestingAgent) )
+			if( $canViewAllGroupRoleMembers || $MemberVisible['MemberVisible'] || ($member['AgentID'] == $requestingAgent) )
 			{
 	            $Key = $member['AgentID'] . $member['RoleID'];
 	            $members[$Key ] = $member;
