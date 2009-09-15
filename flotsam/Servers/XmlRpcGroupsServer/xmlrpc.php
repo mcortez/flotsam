@@ -19,7 +19,8 @@
 
     include("phpxmlrpclib/xmlrpc.inc");
     include("phpxmlrpclib/xmlrpcs.inc");
-    
+
+	$membersVisibleTo = 'Owners';
     include("config.php");
 	
 
@@ -938,6 +939,10 @@
     
 	function canAgentViewRoleMembers( $agentID, $groupID, $roleID )
 	{
+		if( $membersVisibleTo == 'All' ) 
+			return true;
+	
+	
 		$sql = " SELECT CASE WHEN min(OwnerRoleMembership.AgentID) IS NOT NULL THEN 1 ELSE 0 END AS IsOwner ";
 		
 		if( $roleID != '' )
@@ -945,9 +950,19 @@
 			$sql .= " , CASE WHEN min(ReqRoleMembership.AgentID)   IS NOT NULL THEN 1 ELSE 0 END AS IsRoleMember ";
 		}
 		
-		$sql .= " FROM osgroup LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID
-                                                                                      AND OwnerRoleMembership.RoleID  = osgroup.OwnerRoleID 
-                                                                                      AND OwnerRoleMembership.AgentID = '$agentID')";
+		switch( $membersVisibleTo )
+		{
+			case 'Group':
+				$sql .= " FROM osgroup LEFT JOIN JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID AND osgroupmembership.AgentID = '$agentID')";
+				break;
+			case 'Owners':
+			default:
+				$sql .= " FROM osgroup LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID
+		                                                                                      AND OwnerRoleMembership.RoleID  = osgroup.OwnerRoleID 
+		                                                                                      AND OwnerRoleMembership.AgentID = '$agentID')";
+			
+				break;
+		}
 		
 		if ($roleID != '')
 		{

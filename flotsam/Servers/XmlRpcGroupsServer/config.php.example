@@ -31,4 +31,14 @@
 	// Note:  This causes the User Service specified with requests to be ignored, and 
 	// prevents the service from being used cross-grid or by hypergridded users.
 	$overrideAgentUserService = '';
+	
+	
+	// This setting configures the behavior of the "Members are Visible" checkbox
+	// provided for on the Role configuration panel -- and determines who is allowed
+	// to get a list of members for a role when that checkbox is *NOT* checked.
+	
+	$membersVisibleTo = 'Group'; // Anyone in the group can see members
+	// $membersVisibleTo = 'Owners'; // Only members of the owners role can see members
+	// $membersVisibleTo = 'All'; // Anyone can see members
+	
 ?>
