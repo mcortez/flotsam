@@ -1034,7 +1034,7 @@
             
             if (mysql_num_rows($groupmemberResults) == 0) 
             {
-				if( canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
+				if( $canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
 				{
 					$memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
 				} else {
