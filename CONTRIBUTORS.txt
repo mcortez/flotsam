@@ -1,0 +1,32 @@
+The following people have contributed to Flotsam 
+(Thank you for your effort!)
+
+Add your name in here if you have committed to Flotsam
+
+Flotsam Developers 
+
+* Static Sprocket (Michael Cortez)
+* Godfrey
+* dratone
+* coyled
+
+Flotsam is developed to work with and is highly dependant on OpenSim
+* Open Simulator (http://opensimulator.org/)
+
+Flotsam uses components from the following developers either directly or indirectly via OpenSim:
+* Sleepycat Software (Berkeley DB)
+* DB4objects, Inc. (DB4o)
+* SQLite (Public Domain)
+* XmlRpcCS (http://xmlrpccs.sf.net/)
+* MySQL, Inc. (MySQL Connector/NET)
+* NUnit (http://www.nunit.org)
+* AGEIA Inc. (PhysX)
+* Russel L. Smith (ODE)
+* Prebuild (http://sourceforge.net/projects/dnpb/)
+* LibSecondLife (http://www.libsecondlife.org/wiki/Main_Page)
+* DotNetOpenMail v0.5.8b (http://dotnetopenmail.sourceforge.net)
+* Prototype JavaScript Framework ajax (http://www.prototypejs.org/)
+* C5 GENERIC COLLECTION LIBRARY FOR C#/CLI
+* Nini (http://nini.sourceforge.net/)
+* log4net (http://logging.apache.org/log4net/)
+* GlynnTucker.Cache (http://gtcache.sourceforge.net/)

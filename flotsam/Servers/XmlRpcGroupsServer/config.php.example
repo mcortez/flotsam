@@ -1,0 +1,34 @@
+<?php
+    $dbName = "";
+    $dbHost = "";
+    $dbPort = 3306;
+    $dbUser = "";
+    $dbPassword	="";
+	
+    // Set to 0 for no debugging, 1 for essential debugging, 2 for more information.
+    $debugXMLRPC = 0;
+    $debugXMLRPCFile = "xmlrpc.log";
+	
+	//////////////////////////////
+	//// Group security
+	/////////////////////
+	
+	// A xmlrpc client must have this key to commit changes to the Groups DB
+	// Leave blank to allow all clients to make changes.
+	$groupWriteKey = '';
+	$groupReadKey  = '';
+	
+	// Enabling this, will require that the service attempt to verify the agent
+	// is authentic by contacting the User Service specified in the request
+	// to authenticate the AgentID and SessionID provided.
+	$groupRequireAgentAuthForWrite = FALSE;
+	
+	// This enforces the role Permissions bitmask.
+	$groupEnforceGroupPerms = FALSE;
+	
+	// Specify the following to hard-code / lockdown the User Service used to authenticate
+	// user sessions.  Example: http://osgrid.org:8002
+	// Note:  This causes the User Service specified with requests to be ignored, and 
+	// prevents the service from being used cross-grid or by hypergridded users.
+	$overrideAgentUserService = '';
+?>
