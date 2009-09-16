@@ -182,7 +182,7 @@
         
         // Create Everyone Role
 		// NOTE: FIXME: This is a temp fix until the libomv enum for group powers is fixed in OpenSim
-		// $everyonePowers = 8796495740928; // This should now be fixed, when libomv was updated...
+		
         $result = _addRoleToGroup(array('GroupID' => $groupID, 'RoleID' => $uuidZero, 'Name' => 'Everyone', 'Description' => 'Everyone in the group is in the everyone role.', 'Title' => "Member of $name", 'Powers' => $everyonePowers));
         if( isset($result['error']) )
         {
@@ -225,6 +225,8 @@
 	// Private method, does not include security, to only be called from places that have already verified security
     function _addRoleToGroup($params)
     {
+		$everyonePowers = 8796495740928; // This should now be fixed, when libomv was updated...		
+	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
         $roleID  = $params['RoleID'];
@@ -232,7 +234,12 @@
         $desc    = addslashes( $params['Description'] );
         $title   = addslashes( $params['Title'] );
         $powers  = $params['Powers'];
+
 		
+		if( !isset($powers) || ($powers == 0) || ($powers == '') )
+		{
+			$powers = $everyonePowers;
+		}
         
         $sql = " INSERT INTO osrole (GroupID, RoleID, Name, Description, Title, Powers) VALUES "
               ." ('$groupID', '$roleID', '$name', '$desc', '$title', $powers)";
@@ -643,7 +650,13 @@
                 return $result;
             }
         }
-        
+
+		//Set the role they were invited to as their selected role
+        _setAgentGroupSelectedRole(array('AgentID' => $agentID, 'RoleID' => $roleID, 'GroupID' => $groupID));
+		
+		// Set the group as their active group.
+		// _setAgentActiveGroup(array("GroupID" => $groupID, "AgentID" => $agentID));
+		
         return array("success" => "true");
     }
     
@@ -939,48 +952,41 @@
     
 	function canAgentViewRoleMembers( $agentID, $groupID, $roleID )
 	{
+		global $membersVisibleTo, $groupDBCon;
+		
 		if( $membersVisibleTo == 'All' ) 
 			return true;
-	
-	
-		$sql = " SELECT CASE WHEN min(OwnerRoleMembership.AgentID) IS NOT NULL THEN 1 ELSE 0 END AS IsOwner ";
 		
-		if( $roleID != '' )
-		{
-			$sql .= " , CASE WHEN min(ReqRoleMembership.AgentID)   IS NOT NULL THEN 1 ELSE 0 END AS IsRoleMember ";
+		$sql  = " SELECT CASE WHEN min(OwnerRoleMembership.AgentID) IS NOT NULL THEN 1 ELSE 0 END AS IsOwner ";
+		$sql .= " FROM osgroup JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID AND osgroupmembership.AgentID = '$agentID')";
+		$sql .= "         LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID ";
+		$sql .= "                   AND OwnerRoleMembership.RoleID  = osgroup.OwnerRoleID ";
+		$sql .= "                   AND OwnerRoleMembership.AgentID = '$agentID')";
+		$sql .= " WHERE osgroup.GroupID = '$groupID' GROUP BY osgroup.GroupID";	
+		
+        $viewMemberResults = mysql_query($sql, $groupDBCon);
+        if (!$viewMemberResults)
+        {
+            return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error());
+        }
+        
+        if (mysql_num_rows($viewMemberResults) == 0) 
+        {
+			return false;
 		}
+		
+		$viewMemberInfo = mysql_fetch_assoc($viewMemberResults);
 		
 		switch( $membersVisibleTo )
 		{
 			case 'Group':
-				$sql .= " FROM osgroup LEFT JOIN JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID AND osgroupmembership.AgentID = '$agentID')";
-				break;
+				// if we get to here, there is at least one row, so they are a member fo the 
+				return true;
 			case 'Owners':
 			default:
-				$sql .= " FROM osgroup LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID
-		                                                                                      AND OwnerRoleMembership.RoleID  = osgroup.OwnerRoleID 
-		                                                                                      AND OwnerRoleMembership.AgentID = '$agentID')";
-			
-				break;
+				return $viewMemberInfo['IsOwner'];			
 		}
 		
-		if ($roleID != '')
-		{
-			$sql .= "              LEFT JOIN osgrouprolemembership AS ReqRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID
-	                                                                                       AND OwnerRoleMembership.RoleID  = '$roleID' 
-																						   AND OwnerRoleMembership.AgentID = '$agentID')";
-		}
-		
-		$sql .= " WHERE osgroup.GroupID = '$groupID' GROUP BY osgroup.GroupID";	
-		
-        $viewMemberResults = mysql_query($sql, $groupDBCon);
-        if (!$groupmemberResults || (mysql_num_rows($groupmemberResults) != 1))
-        {
-            return false;
-        }
-        
-		$viewMemberInfo = mysql_fetch_assoc($groupmemberResults);
-		return $viewMemberInfo['IsOwner'] || $viewMemberInfo['IsRoleMember'];
 	}
 	
     function getGroupMembers($params)
@@ -1043,7 +1049,7 @@
 				}
             } else {
                 $memberPowersInfo = mysql_fetch_assoc($memberPowersResult);
-				if( $memberPowersInfo['MemberVisible'] || canViewAllGroupRoleMembers  || ($memberResults[$agentID] == $requestingAgent))
+				if( $memberPowersInfo['MemberVisible'] || $canViewAllGroupRoleMembers  || ($memberResults[$agentID] == $requestingAgent))
 				{
 					$memberResults[$agentID] = array_merge($memberInfo, $memberPowersInfo);
 				} else {
