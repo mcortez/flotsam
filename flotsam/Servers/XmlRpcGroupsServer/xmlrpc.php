@@ -980,7 +980,7 @@
 		switch( $membersVisibleTo )
 		{
 			case 'Group':
-				// if we get to here, there is at least one row, so they are a member fo the 
+				// if we get to here, there is at least one row, so they are a member of the group
 				return true;
 			case 'Owners':
 			default:
@@ -1220,14 +1220,23 @@
             return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
         }
         
+        if( mysql_num_rows($roleResults) == 0 )
+        {
+            return array('succeed' => 'false', 'error' => 'No role memberships found for group', 'params' => var_export($params, TRUE), 'sql' => $sql);
+        }		
         $members = array();
         while($member = mysql_fetch_assoc($memberResults))
         {
-			if( $canViewAllGroupRoleMembers || $MemberVisible['MemberVisible'] || ($member['AgentID'] == $requestingAgent) )
+			if( $canViewAllGroupRoleMembers || $member['MemberVisible'] || ($member['AgentID'] == $requestingAgent) )
 			{
 	            $Key = $member['AgentID'] . $member['RoleID'];
 	            $members[$Key ] = $member;
 			}
+        }
+		
+		if( count($members) == 0 )
+		{
+            return array('succeed' => 'false', 'error' => 'No rolememberships visible for group', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }
         
         return $members;
