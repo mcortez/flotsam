@@ -1220,7 +1220,7 @@
             return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
         }
         
-        if( mysql_num_rows($roleResults) == 0 )
+        if( mysql_num_rows($memberResults) == 0 )
         {
             return array('succeed' => 'false', 'error' => 'No role memberships found for group', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }		
