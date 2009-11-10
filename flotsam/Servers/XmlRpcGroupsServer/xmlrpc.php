@@ -1038,7 +1038,7 @@
                 return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
             }
             
-            if (mysql_num_rows($groupmemberResults) == 0) 
+            if (mysql_num_rows($memberPowersResult) == 0) 
             {
 				if( $canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
 				{
@@ -1059,6 +1059,11 @@
             }
         }
         
+        if (count($memberResults) == 0) 
+        {
+            return array('succeed' => 'false', 'error' => 'No Visible Group Members found', 'params' => var_export($params, TRUE), 'sql' => $sql);
+        }
+		
         return $memberResults;
     }
     
