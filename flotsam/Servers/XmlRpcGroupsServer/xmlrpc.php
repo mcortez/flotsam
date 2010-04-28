@@ -20,7 +20,6 @@
     include("phpxmlrpclib/xmlrpc.inc");
     include("phpxmlrpclib/xmlrpcs.inc");
 
-	$membersVisibleTo = 'Owners';
     include("config.php");
 	
 
