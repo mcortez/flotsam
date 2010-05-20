@@ -16,75 +16,103 @@ namespace Xml2INI
                 return;
             }
 
-            string ImportDir = args[0];
+            string[] files2convert;
+            string ImportDir;
 
-            if (!Directory.Exists(ImportDir))
+            if (Directory.Exists(args[0]))
             {
-                Console.WriteLine("Could not find directory {0}", ImportDir);
+                // importing a directory of xml files
+
+                ImportDir = args[0]; 
+                files2convert = Directory.GetFiles(ImportDir, "*.xml");
+            }
+            else if (File.Exists(args[0]))
+            {
+                ImportDir = Path.GetDirectoryName(args[0]);                
+                files2convert = new string[] { args[0] };
+            }
+            else
+            {
+                Console.WriteLine("Could not find directory or file : {0}", args[0]);
                 DisplayUsage();
                 return;
             }
 
+
             List<RegionConfig> RegionConfigs = new List<RegionConfig>();
-            foreach (string file in Directory.GetFiles(ImportDir, "*.xml"))
+
+
+            foreach (string file in files2convert)
             {
                 Console.WriteLine("Reading: {0}", file);
                 XmlDocument xml = new XmlDocument();
                 xml.Load(file);
 
-                XmlNode config = xml.SelectSingleNode("/Root/Config");
-                /*
-                 * <Root>
-                 *  <Config 
-                 *      sim_UUID="f6712d7c-7374-4ca3-b1cb-8ebc67dd1652" 
-                 *      sim_name="Leeward Isles 01" 
-                 *      sim_location_x="10027" 
-                 *      sim_location_y="9975" 
-                 *      internal_ip_address="74.208.149.87" 
-                 *      internal_ip_port="9100" 
-                 *      allow_alternate_ports="false" 
-                 *      external_host_name="74.208.149.87" 
-                 *      master_avatar_uuid="00000000-0000-0000-0000-000000000000" 
-                 *      master_avatar_first="Static" 
-                 *      master_avatar_last="Sprocket" 
-                 *      master_avatar_pass="" 
-                 *      lastmap_uuid="7a204755-fdbb-422c-8261-5ef8e3882ee3" 
-                 *      lastmap_refresh="1253902766" 
-                 *      nonphysical_prim_max="0" 
-                 *      physical_prim_max="0" 
-                 *      clamp_prim_size="false" 
-                 *      object_capacity="0" 
-                 *      scope_id="00000000-0000-0000-0000-000000000000" />
-                 * </root>
-                 */
-                RegionConfig regconfig = new RegionConfig();
 
-                regconfig.sim_UUID = config.Attributes["sim_UUID"].Value;
-                regconfig.sim_name = config.Attributes["sim_name"].Value;
 
-                int.TryParse(config.Attributes["sim_location_x"].Value, out regconfig.sim_location_x);
-                int.TryParse(config.Attributes["sim_location_y"].Value, out regconfig.sim_location_y);
+                foreach (XmlNode config in xml.SelectNodes("//Root/Config"))
+                {
+                    /*
+                     * <Root>
+                     *  <Config 
+                     *      sim_UUID="f6712d7c-7374-4ca3-b1cb-8ebc67dd1652" 
+                     *      sim_name="Leeward Isles 01" 
+                     *      sim_location_x="10027" 
+                     *      sim_location_y="9975" 
+                     *      internal_ip_address="74.208.149.87" 
+                     *      internal_ip_port="9100" 
+                     *      allow_alternate_ports="false" 
+                     *      external_host_name="74.208.149.87" 
+                     *      master_avatar_uuid="00000000-0000-0000-0000-000000000000" 
+                     *      master_avatar_first="Static" 
+                     *      master_avatar_last="Sprocket" 
+                     *      master_avatar_pass="" 
+                     *      lastmap_uuid="7a204755-fdbb-422c-8261-5ef8e3882ee3" 
+                     *      lastmap_refresh="1253902766" 
+                     *      nonphysical_prim_max="0" 
+                     *      physical_prim_max="0" 
+                     *      clamp_prim_size="false" 
+                     *      object_capacity="0" 
+                     *      scope_id="00000000-0000-0000-0000-000000000000" />
+                     * </root>
+                     */
+                    RegionConfig regconfig = new RegionConfig();
 
-                regconfig.internal_ip_address = config.Attributes["internal_ip_address"].Value;
-                regconfig.internal_ip_port = config.Attributes["internal_ip_port"].Value;
-                regconfig.allow_alternate_ports = config.Attributes["allow_alternate_ports"].Value;
-                regconfig.external_host_name = config.Attributes["external_host_name"].Value;
-                regconfig.master_avatar_uuid = config.Attributes["master_avatar_uuid"].Value;
-                regconfig.master_avatar_first = config.Attributes["master_avatar_first"].Value;
-                regconfig.master_avatar_last = config.Attributes["master_avatar_last"].Value;
-                regconfig.master_avatar_pass = config.Attributes["master_avatar_pass"].Value;
-                regconfig.lastmap_uuid = config.Attributes["lastmap_uuid"].Value;
-                regconfig.lastmap_refresh = config.Attributes["lastmap_refresh"].Value;
-                regconfig.nonphysical_prim_max = config.Attributes["nonphysical_prim_max"].Value;
-                regconfig.physical_prim_max = config.Attributes["physical_prim_max"].Value;
-                regconfig.clamp_prim_size = config.Attributes["clamp_prim_size"].Value;
-                regconfig.object_capacity = config.Attributes["object_capacity"].Value;
+                    regconfig.sim_UUID = config.Attributes["sim_UUID"].Value;
+                    regconfig.sim_name = config.Attributes["sim_name"].Value;
 
-                RegionConfigs.Add(regconfig);
+                    Console.WriteLine("Processing: {0}", regconfig.sim_name);
+
+                    int.TryParse(config.Attributes["sim_location_x"].Value, out regconfig.sim_location_x);
+                    int.TryParse(config.Attributes["sim_location_y"].Value, out regconfig.sim_location_y);
+
+                    regconfig.internal_ip_address = config.Attributes["internal_ip_address"].Value;
+                    regconfig.internal_ip_port = config.Attributes["internal_ip_port"].Value;
+                    regconfig.allow_alternate_ports = config.Attributes["allow_alternate_ports"].Value;
+                    regconfig.external_host_name = config.Attributes["external_host_name"].Value;
+                    regconfig.master_avatar_uuid = config.Attributes["master_avatar_uuid"].Value;
+                    regconfig.master_avatar_first = config.Attributes["master_avatar_first"].Value;
+                    regconfig.master_avatar_last = config.Attributes["master_avatar_last"].Value;
+                    regconfig.master_avatar_pass = config.Attributes["master_avatar_pass"].Value;
+                    regconfig.lastmap_uuid = config.Attributes["lastmap_uuid"].Value;
+                    regconfig.lastmap_refresh = config.Attributes["lastmap_refresh"].Value;
+                    regconfig.nonphysical_prim_max = config.Attributes["nonphysical_prim_max"].Value;
+                    regconfig.physical_prim_max = config.Attributes["physical_prim_max"].Value;
+                    regconfig.clamp_prim_size = config.Attributes["clamp_prim_size"].Value;
+                    regconfig.object_capacity = config.Attributes["object_capacity"].Value;
+
+                    RegionConfigs.Add(regconfig);
+                }
+            }
+
+            if (RegionConfigs.Count == 0)
+            {
+                Console.WriteLine("No regions processed.");
+                return;
             }
 
             Console.WriteLine();
-            Console.WriteLine("Sorting");
+            Console.WriteLine("Sorting {0} Regions", RegionConfigs.Count);
 
             RegionConfigs.Sort(new RegionSort());
 
@@ -106,6 +134,7 @@ namespace Xml2INI
         {
             Console.WriteLine();
             Console.WriteLine("Usage: Xml2INI [region_xml_dir]");
+            Console.WriteLine("Usage: Xml2INI [region_xml_file]");
         }
     }
 
