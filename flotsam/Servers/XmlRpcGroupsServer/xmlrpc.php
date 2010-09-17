@@ -1199,22 +1199,20 @@
 
     function getGroupRoleMembers($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
 		
-		
-		$roleMembersVisibleBit = $groupPowers['RoleMembersVisible'];
-		$canViewAllGroupRoleMembers = canAgentViewRoleMembers($requestingAgent, $groupID, '');
+        $roleMembersVisibleBit = $groupPowers['RoleMembersVisible'];
+        $canViewAllGroupRoleMembers = canAgentViewRoleMembers($requestingAgent, $groupID, '');
 		
         $sql = " SELECT "
               ." osrole.RoleID, osgrouprolemembership.AgentID"
-			  ." , (osrole.Powers & $roleMembersVisibleBit) as MemberVisible"
+	      		  ." , (osrole.Powers & $roleMembersVisibleBit) as MemberVisible"
               ." FROM osrole JOIN osgrouprolemembership ON (osrole.GroupID = osgrouprolemembership.GroupID AND osrole.RoleID = osgrouprolemembership.RoleID)"
               ." WHERE osrole.GroupID = '$groupID'";
               
@@ -1228,18 +1226,19 @@
         {
             return array('succeed' => 'false', 'error' => 'No role memberships found for group', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }		
+
         $members = array();
         while($member = mysql_fetch_assoc($memberResults))
         {
-			if( $canViewAllGroupRoleMembers || $member['MemberVisible'] || ($member['AgentID'] == $requestingAgent) )
-			{
-	            $Key = $member['AgentID'] . $member['RoleID'];
-	            $members[$Key ] = $member;
-			}
+            if( $canViewAllGroupRoleMembers || $member['MemberVisible'] || ($member['AgentID'] == $requestingAgent) )
+            {
+                $Key = $member['AgentID'] . $member['RoleID'];
+                $members[$Key ] = $member;
+            }
         }
 		
-		if( count($members) == 0 )
-		{
+        if( count($members) == 0 )
+        {
             return array('succeed' => 'false', 'error' => 'No rolememberships visible for group', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }
         
@@ -1248,11 +1247,10 @@
     
     function setAgentGroupInfo($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+          return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
 		
