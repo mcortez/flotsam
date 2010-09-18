@@ -12,9 +12,6 @@
       or if applicable:
       
       return array('succeed' => 'false', 'message' => 'What went wrong', 'params' => var_export($params, TRUE), 'sql' => $sql);
-
-      
-      
     */
 
     include("phpxmlrpclib/xmlrpc.inc");
@@ -23,7 +20,7 @@
     include("config.php");
 	
 
-	$groupPowers = array(
+    $groupPowers = array(
         'None' => '0',
         /// <summary>Can send invitations to groups default role</summary>
         'Invite' => '2',
@@ -116,14 +113,10 @@
         /// <summary>Can vote on group proposals</summary>
         'VoteOnProposal' => '35184372088832',
         /// <summary>Can return group owned objects</summary>
-        'ReturnGroupOwned' => '281474976710656'
-		
-		
+        'ReturnGroupOwned' => '281474976710656',
         /// <summary>Members are visible to non-owners</summary>
-		, 'RoleMembersVisible' => '140737488355328'
+		    'RoleMembersVisible' => '140737488355328'
 		);
-	
-	
 	
     $uuidZero = "00000000-0000-0000-0000-000000000000";
     
@@ -134,9 +127,8 @@
     }
     mysql_select_db($dbName, $groupDBCon);
 
-	// This is filled in by secure()
-	$requestingAgent = $uuidZero;
-
+    // This is filled in by secure()
+    $requestingAgent = $uuidZero;
     
     function test() 
     {
@@ -148,12 +140,13 @@
 
     function createGroup($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+		    if( is_array($error = secureRequest($params, TRUE)) )
+        {
+          return $error;
+        }
 	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
+
         $groupID = $params["GroupID"];
         $name = addslashes( $params["Name"] );
         $charter = addslashes( $params["Charter"] );
@@ -180,7 +173,7 @@
         }
         
         // Create Everyone Role
-		// NOTE: FIXME: This is a temp fix until the libomv enum for group powers is fixed in OpenSim
+        // NOTE: FIXME: This is a temp fix until the libomv enum for group powers is fixed in OpenSim
 		
         $result = _addRoleToGroup(array('GroupID' => $groupID, 'RoleID' => $uuidZero, 'Name' => 'Everyone', 'Description' => 'Everyone in the group is in the everyone role.', 'Title' => "Member of $name", 'Powers' => $everyonePowers));
         if( isset($result['error']) )
@@ -202,7 +195,6 @@
             return $result;
         }
         
-        
         // Select the owner's role for the founder
         $result = _setAgentGroupSelectedRole(array('AgentID' => $founderID, 'RoleID' => $ownerRoleID, 'GroupID' => $groupID));
         if( isset($result['error']) )
@@ -217,14 +209,13 @@
             return $result;
         }
         
-        
         return getGroup(array("GroupID"=>$groupID));
     }
     
-	// Private method, does not include security, to only be called from places that have already verified security
+	  // Private method, does not include security, to only be called from places that have already verified security
     function _addRoleToGroup($params)
     {
-		$everyonePowers = 8796495740928; // This should now be fixed, when libomv was updated...		
+		    $everyonePowers = 8796495740928; // This should now be fixed, when libomv was updated...		
 	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
@@ -234,11 +225,10 @@
         $title   = addslashes( $params['Title'] );
         $powers  = $params['Powers'];
 
-		
-		if( !isset($powers) || ($powers == 0) || ($powers == '') )
-		{
-			$powers = $everyonePowers;
-		}
+        if( !isset($powers) || ($powers == 0) || ($powers == '') )
+        {
+            $powers = $everyonePowers;
+        }
         
         $sql = " INSERT INTO osrole (GroupID, RoleID, Name, Description, Title, Powers) VALUES "
               ." ('$groupID', '$roleID', '$name', '$desc', '$title', $powers)";
@@ -253,33 +243,31 @@
         return array("success" => "true");
     }
 	
-	
     function addRoleToGroup($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
+      
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
-        
-		// Verify the requesting agent has permission
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['CreateRole'])) )
-		{
-			return $error;
-		}
+          
+        // Verify the requesting agent has permission
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['CreateRole'])) )
+        {
+            return $error;
+        }
 
-		return _addRoleToGroup($params);
+        return _addRoleToGroup($params);
     }
     
     function updateGroupRole($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
@@ -289,12 +277,11 @@
         $title   = addslashes( $params['Title'] );
         $powers  = $params['Powers'];
         
-		// Verify the requesting agent has permission
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['RoleProperties'])) )
-		{
-			return $error;
-		}
-		
+        // Verify the requesting agent has permission
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['RoleProperties'])) )
+        {
+            return $error;
+        }
 		
         $sql = " UPDATE osrole SET RoleID = '$roleID' ";
         if( isset($params['Name']) )
@@ -326,19 +313,19 @@
     
     function removeRoleFromGroup($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
         $roleID  = $params['RoleID'];
         
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['RoleProperties'])) )
-		{
-			return $error;
-		}
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['RoleProperties'])) )
+        {
+            return $error;
+        }
 		
         /// 1. Remove all members from Role
         /// 2. Set selected Role to uuidZero for anyone that had the role selected
@@ -365,17 +352,15 @@
         return array("success" => "true");
     }
     
-
-    
     function getGroup($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+          return $error;
+        }
 		
-		return _getGroup($params);
-	}
+        return _getGroup($params);
+    }
 		
     function _getGroup($params)
     {
@@ -386,14 +371,17 @@
               ." LEFT JOIN osrole ON (osgroup.GroupID = osrole.GroupID)"
               ." LEFT JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID)"
               ." WHERE ";
+
         if( isset($params['GroupID']) )
         {
             $sql .= "osgroup.GroupID = '".$params['GroupID']."'";
-            
-        } else if( isset($params['Name']) ) 
+        } 
+        else if( isset($params['Name']) ) 
         {
             $sql .= "osgroup.Name = '".addslashes($params['Name'])."'";
-        } else {
+        } 
+        else 
+        {
             return array("error" => "Must specify GroupID or Name");
         }
         
@@ -412,15 +400,14 @@
         }
         
         return mysql_fetch_assoc($result);
-        
     }        
     
     function updateGroup($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+          return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params["GroupID"];
@@ -432,10 +419,10 @@
         $allowPublish = $params["AllowPublish"];
         $maturePublish = $params["MaturePublish"];
         
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['ChangeOptions'])) )
-		{
-			return $error;
-		}
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['ChangeOptions'])) )
+        {
+            return $error;
+        }
 		
         // Create group
         $sql = "UPDATE osgroup
@@ -458,13 +445,12 @@
         return array('success' => 'true');
     }
 
-    
     function findGroups($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $search = addslashes( $params['Search'] );
@@ -499,14 +485,13 @@
         }
         
         return array('results' => $results, 'success' => TRUE);
-        
     }
     
     function _setAgentActiveGroup($params)
     {
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-		$agentID = $params['AgentID'];
-		$groupID = $params['GroupID'];
+        $agentID = $params['AgentID'];
+        $groupID = $params['GroupID'];
 		
         $sql = " UPDATE osagent "
               ." SET ActiveGroupID = '$groupID'"
@@ -533,73 +518,74 @@
 
     function setAgentActiveGroup($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-		$agentID = $params['AgentID'];
-		$groupID = $params['GroupID'];
-		
-		if( isset($requestingAgent) && ($requestingAgent != $uuidZero) && ($requestingAgent != $agentID) )
-		{
+        $agentID = $params['AgentID'];
+        $groupID = $params['GroupID'];
+        
+        if( isset($requestingAgent) && ($requestingAgent != $uuidZero) && ($requestingAgent != $agentID) )
+        {
             return array('error' => "Agent can only change their own Selected Group Role", 'params' => var_export($params, TRUE));
-		}
-		
-		return _setAgentActiveGroup($params);
+        }
+        
+        return _setAgentActiveGroup($params);
     }
     
     function addAgentToGroup($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+          return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params["GroupID"];
         $agentID = $params["AgentID"];
 		
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
-		{
-			// If they don't have direct permission, check to see if the group is marked for open enrollment
-			$groupInfo = _getGroup( array ('GroupID'=>$groupID) );
-			
-			if( isset($groupInfo['error']))
-			{
-				return $groupInfo;
-			}
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
+        {
+            // If they don't have direct permission, check to see if the group is marked for open enrollment
+            $groupInfo = _getGroup( array ('GroupID'=>$groupID) );
+          
+            if( isset($groupInfo['error']))
+            {
+                return $groupInfo;
+            }
 
-			if($groupInfo['OpenEnrollment'] != 1)
-			{
-				// Group is not open enrollment, check if the specified agentid has an invite
-		        $sql = " SELECT GroupID, RoleID, AgentID FROM osgroupinvite"
-		              ." WHERE osgroupinvite.AgentID = '$agentID' AND osgroupinvite.GroupID = '$groupID'";
-		              
-		        $results = mysql_query($sql, $groupDBCon);
-		        if (!$results) 
-		        {
-		            return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
-		        }
-		        
-		        if( mysql_num_rows($results) == 1 )
-		        {
-					// if there is an invite, make sure we're adding the user to the role specified in the invite
-		            $inviteInfo = mysql_fetch_assoc($results);
-					$params['RoleID'] = $inviteInfo['RoleID'];
-		        } else {
-					// Not openenrollment, not invited, return permission denied error
-					return $error;
-				}
-				
-			} 
-		}
+            if($groupInfo['OpenEnrollment'] != 1)
+            {
+                // Group is not open enrollment, check if the specified agentid has an invite
+                $sql = " SELECT GroupID, RoleID, AgentID FROM osgroupinvite"
+                      ." WHERE osgroupinvite.AgentID = '$agentID' AND osgroupinvite.GroupID = '$groupID'";
+                        
+                $results = mysql_query($sql, $groupDBCon);
+                if (!$results) 
+                {
+                    return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
+                }
+                  
+                if( mysql_num_rows($results) == 1 )
+                {
+                    // if there is an invite, make sure we're adding the user to the role specified in the invite
+                    $inviteInfo = mysql_fetch_assoc($results);
+                    $params['RoleID'] = $inviteInfo['RoleID'];
+                } 
+                else 
+                {
+                    // Not openenrollment, not invited, return permission denied error
+                    return $error;
+                }
+            } 
+        }
 
-		return _addAgentToGroup($params);
+        return _addAgentToGroup($params);
     }
     
-	// Private method, does not include security, to only be called from places that have already verified security
+	  // Private method, does not include security, to only be called from places that have already verified security
     function _addAgentToGroup($params)
     {
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
@@ -626,7 +612,6 @@
             $sql = " INSERT INTO osgroupmembership (GroupID, AgentID, Contribution, ListInProfile, AcceptNotices, SelectedRoleID) VALUES "
                   ."('$groupID','$agentID', 0, 1, 1,'$roleID')";
         
-        
             if (!mysql_query($sql, $groupDBCon))
             {
                 return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
@@ -650,34 +635,34 @@
             }
         }
 
-		//Set the role they were invited to as their selected role
+		    //Set the role they were invited to as their selected role
         _setAgentGroupSelectedRole(array('AgentID' => $agentID, 'RoleID' => $roleID, 'GroupID' => $groupID));
 		
-		// Set the group as their active group.
-		// _setAgentActiveGroup(array("GroupID" => $groupID, "AgentID" => $agentID));
+        // Set the group as their active group.
+        // _setAgentActiveGroup(array("GroupID" => $groupID, "AgentID" => $agentID));
 		
         return array("success" => "true");
     }
     
     function removeAgentFromGroup($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $agentID = $params["AgentID"];
         $groupID = $params["GroupID"];
 
-		// An agent is always allowed to remove themselves from a group -- so only check if the requesting agent is different then the agent being removed.
-		if( $agentID != $requestingAgent )
-		{
-			if( is_array($error = checkGroupPermission($groupID, $groupPowers['RemoveMember'])) )
-			{
-				return $error;
-			}
-		}
+        // An agent is always allowed to remove themselves from a group -- so only check if the requesting agent is different then the agent being removed.
+        if( $agentID != $requestingAgent )
+        {
+            if( is_array($error = checkGroupPermission($groupID, $groupPowers['RemoveMember'])) )
+            {
+                return $error;
+            }
+        }
 		
         // 1. If group is agent's active group, change active group to uuidZero
         // 2. Remove Agent from group (osgroupmembership)
@@ -686,6 +671,7 @@
         $sql = " UPDATE osagent "
               ." SET ActiveGroupID = '$uuidZero'"
               ." WHERE AgentID = '$agentID' AND ActiveGroupID = '$groupID'";
+
         if (!mysql_query($sql, $groupDBCon))
         {
             return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
@@ -739,63 +725,62 @@
     
     function addAgentToGroupRole($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $agentID = $params["AgentID"];
         $groupID = $params["GroupID"];
         $roleID = $params["RoleID"];
     
-		// Check if being assigned to Owners role, assignments to an owners role can only be requested by owners.
-		$sql = " SELECT OwnerRoleID, osgrouprolemembership.AgentID "
-		      ." FROM osgroup LEFT JOIN osgrouprolemembership ON (osgroup.GroupID = osgrouprolemembership.GroupID AND osgroup.OwnerRoleID = osgrouprolemembership.RoleID) "
-			  ." WHERE osgrouprolemembership.AgentID = '$requestingAgent' AND osgroup.GroupID = '$groupID'";
+        // Check if being assigned to Owners role, assignments to an owners role can only be requested by owners.
+        $sql = " SELECT OwnerRoleID, osgrouprolemembership.AgentID "
+              ." FROM osgroup LEFT JOIN osgrouprolemembership ON (osgroup.GroupID = osgrouprolemembership.GroupID AND osgroup.OwnerRoleID = osgrouprolemembership.RoleID) "
+            ." WHERE osgrouprolemembership.AgentID = '$requestingAgent' AND osgroup.GroupID = '$groupID'";
 			  
-		$results = mysql_query($sql, $groupDBCon);
-		if (!$results) 
-		{
-			return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
-		}
+        $results = mysql_query($sql, $groupDBCon);
+        if (!$results) 
+        {
+            return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
+        }
 		
         if( mysql_num_rows($results) == 0 )
         {
-			return array('error' => "Group ($groupID) not found or Agent ($agentID) is not in the owner's role", 'params' => var_export($params, TRUE));
-		}
+			      return array('error' => "Group ($groupID) not found or Agent ($agentID) is not in the owner's role", 'params' => var_export($params, TRUE));
+		    }
 
-		$ownerRoleInfo = mysql_fetch_assoc($results);
-		if( ($ownerRoleInfo['OwnerRoleID'] == $roleID) && ($ownerRoleInfo['AgentID'] != $requestingAgent) )
-		{
-			return array('error' => "Requesting agent $requestingAgent is not a member of the Owners Role and cannot add members to the owners role.", 'params' => var_export($params, TRUE));
-		}
+        $ownerRoleInfo = mysql_fetch_assoc($results);
+        if( ($ownerRoleInfo['OwnerRoleID'] == $roleID) && ($ownerRoleInfo['AgentID'] != $requestingAgent) )
+        {
+            return array('error' => "Requesting agent $requestingAgent is not a member of the Owners Role and cannot add members to the owners role.", 'params' => var_export($params, TRUE));
+        }
 	
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
+        {
+            return $error;
+        }
 	
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
-		{
-			return $error;
-		}
-	
-		return _addAgentToGroupRole($params);
+		    return _addAgentToGroupRole($params);
     }
     
     function removeAgentFromGroupRole($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $agentID = $params["AgentID"];
         $groupID = $params["GroupID"];
         $roleID  = $params["RoleID"];
 
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
-		{
-			return $error;
-		}
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
+        {
+          return $error;
+        }
 		
         // If agent has this role selected, change their selection to everyone (uuidZero) role
         $sql = " UPDATE osgroupmembership SET SelectedRoleID = '$uuidZero' WHERE AgentID = '$agentID' AND GroupID = '$groupID' AND SelectedRoleID = '$roleID'";
@@ -834,31 +819,30 @@
 
     function setAgentGroupSelectedRole($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $agentID = $params["AgentID"];
         $groupID = $params["GroupID"];
         $roleID = $params["RoleID"];
     
-		if( isset($requestingAgent) && ($requestingAgent != $uuidZero) && ($requestingAgent != $agentID) )
-		{
+        if( isset($requestingAgent) && ($requestingAgent != $uuidZero) && ($requestingAgent != $agentID) )
+        {
             return array('error' => "Agent can only change their own Selected Group Role", 'params' => var_export($params, TRUE));
-		}
+        }
 	
         return _setAgentGroupSelectedRole($params);
     }
 	
     function getAgentGroupMembership($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $groupID = $params['GroupID'];
@@ -901,10 +885,10 @@
 
     function getAgentGroupMemberships($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $agentID = $params['AgentID'];
@@ -927,7 +911,6 @@
         if( mysql_num_rows($groupmembershipResults) == 0 )
         {
             return array('succeed' => 'false', 'error' => 'No Memberships', 'params' => var_export($params, TRUE), 'sql' => $sql);
-            
         }
         
         $groupResults = array();
@@ -949,19 +932,19 @@
         return $groupResults;
     }
     
-	function canAgentViewRoleMembers( $agentID, $groupID, $roleID )
-	{
-		global $membersVisibleTo, $groupDBCon;
+    function canAgentViewRoleMembers( $agentID, $groupID, $roleID )
+    {
+        global $membersVisibleTo, $groupDBCon;
 		
-		if( $membersVisibleTo == 'All' ) 
-			return true;
+        if( $membersVisibleTo == 'All' ) 
+          return true;
 		
-		$sql  = " SELECT CASE WHEN min(OwnerRoleMembership.AgentID) IS NOT NULL THEN 1 ELSE 0 END AS IsOwner ";
-		$sql .= " FROM osgroup JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID AND osgroupmembership.AgentID = '$agentID')";
-		$sql .= "         LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID ";
-		$sql .= "                   AND OwnerRoleMembership.RoleID  = osgroup.OwnerRoleID ";
-		$sql .= "                   AND OwnerRoleMembership.AgentID = '$agentID')";
-		$sql .= " WHERE osgroup.GroupID = '$groupID' GROUP BY osgroup.GroupID";	
+        $sql  = " SELECT CASE WHEN min(OwnerRoleMembership.AgentID) IS NOT NULL THEN 1 ELSE 0 END AS IsOwner ";
+        $sql .= " FROM osgroup JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID AND osgroupmembership.AgentID = '$agentID')";
+        $sql .= "         LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (OwnerRoleMembership.GroupID = osgroup.GroupID ";
+        $sql .= "                   AND OwnerRoleMembership.RoleID  = osgroup.OwnerRoleID ";
+        $sql .= "                   AND OwnerRoleMembership.AgentID = '$agentID')";
+        $sql .= " WHERE osgroup.GroupID = '$groupID' GROUP BY osgroup.GroupID";	
 		
         $viewMemberResults = mysql_query($sql, $groupDBCon);
         if (!$viewMemberResults)
@@ -971,29 +954,28 @@
         
         if (mysql_num_rows($viewMemberResults) == 0) 
         {
-			return false;
-		}
+            return false;
+        }
 		
-		$viewMemberInfo = mysql_fetch_assoc($viewMemberResults);
+        $viewMemberInfo = mysql_fetch_assoc($viewMemberResults);
 		
-		switch( $membersVisibleTo )
-		{
-			case 'Group':
-				// if we get to here, there is at least one row, so they are a member of the group
-				return true;
-			case 'Owners':
-			default:
-				return $viewMemberInfo['IsOwner'];			
-		}
-		
-	}
+        switch( $membersVisibleTo )
+        {
+            case 'Group':
+                // if we get to here, there is at least one row, so they are a member of the group
+                return true;
+            case 'Owners':
+            default:
+                return $viewMemberInfo['IsOwner'];			
+        }
+    }
 	
     function getGroupMembers($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
@@ -1021,11 +1003,11 @@
             return array('succeed' => 'false', 'error' => 'No Group Members found', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }
         
-		$roleMembersVisibleBit = $groupPowers['RoleMembersVisible'];
-		$canViewAllGroupRoleMembers = canAgentViewRoleMembers($requestingAgent, $groupID, '');
+        $roleMembersVisibleBit = $groupPowers['RoleMembersVisible'];
+        $canViewAllGroupRoleMembers = canAgentViewRoleMembers($requestingAgent, $groupID, '');
 		
         $memberResults = array();
-        while($memberInfo = mysql_fetch_assoc($groupmemberResults))
+        while ($memberInfo = mysql_fetch_assoc($groupmemberResults))
         {
             $agentID = $memberInfo['AgentID'];
             $sql = " SELECT BIT_OR(osrole.Powers) AS AgentPowers, ( BIT_OR(osrole.Powers) & $roleMembersVisibleBit) as MemberVisible"
@@ -1039,22 +1021,28 @@
             
             if (mysql_num_rows($memberPowersResult) == 0) 
             {
-				if( $canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
-				{
-					$memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
-				} else {
-					// if can't view all group role members and there is no Member Visible bit, then don't return this member's info
-					unset($memberResults[$agentID]);
-				}
-            } else {
+				        if( $canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
+				        {
+					          $memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
+				        } 
+                else 
+                {
+                    // if can't view all group role members and there is no Member Visible bit, then don't return this member's info
+                    unset($memberResults[$agentID]);
+                }
+            } 
+            else 
+            {
                 $memberPowersInfo = mysql_fetch_assoc($memberPowersResult);
-				if( $memberPowersInfo['MemberVisible'] || $canViewAllGroupRoleMembers  || ($memberResults[$agentID] == $requestingAgent))
-				{
-					$memberResults[$agentID] = array_merge($memberInfo, $memberPowersInfo);
-				} else {
-					// if can't view all group role members and there is no Member Visible bit, then don't return this member's info
-					unset($memberResults[$agentID]);
-				}
+                if( $memberPowersInfo['MemberVisible'] || $canViewAllGroupRoleMembers  || ($memberResults[$agentID] == $requestingAgent))
+                {
+                    $memberResults[$agentID] = array_merge($memberInfo, $memberPowersInfo);
+                } 
+                else 
+                {
+                    // if can't view all group role members and there is no Member Visible bit, then don't return this member's info
+                    unset($memberResults[$agentID]);
+                }
             }
         }
         
@@ -1066,15 +1054,14 @@
         return $memberResults;
     }
     
-    
     function getAgentActiveMembership($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
-		secureRequest($params, FALSE);
+		    secureRequest($params, FALSE);
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $agentID = $params['AgentID'];
@@ -1115,11 +1102,10 @@
     
     function getAgentRoles($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $agentID = $params['AgentID'];
@@ -1161,11 +1147,10 @@
     
     function getGroupRoles($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+          return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $groupID = $params['GroupID'];
@@ -1239,7 +1224,7 @@
 		
         if( count($members) == 0 )
         {
-            return array('succeed' => 'false', 'error' => 'No rolememberships visible for group', 'params' => var_export($params, TRUE), 'sql' => $sql);
+            return array('succeed' => 'false', 'error' => 'No role memberships visible for group', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }
         
         return $members;
@@ -1249,7 +1234,7 @@
     {
         if( is_array($error = secureRequest($params, TRUE)) )
         {
-          return $error;
+            return $error;
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
@@ -1280,11 +1265,10 @@
             $listInProfile = 0;
         }
 
-		if( isset($requestingAgent) && ($requestingAgent != $uuidZero) && ($requestingAgent != $agentID) )
-		{
+        if( isset($requestingAgent) && ($requestingAgent != $uuidZero) && ($requestingAgent != $agentID) )
+        {
             return array('error' => "Agent can only change their own group info", 'params' => var_export($params, TRUE));
-		}
-		
+        }
     
         $sql = " UPDATE "
               ."     osgroupmembership"
@@ -1311,22 +1295,19 @@
         {
             return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
         }
-
         
         return array('success'=> 'true');
     }
     
     function getGroupNotices($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
-		
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $groupID = $params['GroupID'];
-
         
         $sql = " SELECT "
               ." GroupID, NoticeID, Timestamp, FromName, Subject, Message, BinaryBucket"
@@ -1356,14 +1337,13 @@
 
     function getGroupNotice($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $noticeID = $params['NoticeID'];
-
         
         $sql = " SELECT "
               ." GroupID, NoticeID, Timestamp, FromName, Subject, Message, BinaryBucket"
@@ -1386,10 +1366,10 @@
     
     function addGroupNotice($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID  = $params['GroupID'];
@@ -1400,10 +1380,10 @@
         $message      = addslashes($params['Message']);
         $timeStamp    = $params['TimeStamp'];
 
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['SendNotices'])) )
-		{
-			return $error;
-		}
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['SendNotices'])) )
+        {
+            return $error;
+        }
         
         $sql = " INSERT INTO osgroupnotice"
               ." (GroupID, NoticeID, Timestamp, FromName, Subject, Message, BinaryBucket)"
@@ -1418,14 +1398,13 @@
         
         return array('success' => 'true');
     }
-
     
     function addAgentToGroupInvite($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $inviteID = $params['InviteID'];
@@ -1433,10 +1412,10 @@
         $roleID  = $params['RoleID'];
         $agentID = $params['AgentID'];
 
-		if( is_array($error = checkGroupPermission($groupID, $groupPowers['Invite'])) )
-		{
-			return $error;
-		}
+        if( is_array($error = checkGroupPermission($groupID, $groupPowers['Invite'])) )
+        {
+          return $error;
+        }
 		
         // Remove any existing invites for this agent to this group
         $sql = " DELETE FROM osgroupinvite"
@@ -1463,14 +1442,14 @@
 
     function getAgentToGroupInvite($params)
     {
-		if( is_array($error = secureRequest($params, FALSE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, FALSE)) )
+        {
+            return $error;
+        }
+
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $inviteID = $params['InviteID'];
 
-        
         $sql = " SELECT GroupID, RoleID, AgentID FROM osgroupinvite"
               ." WHERE osgroupinvite.InviteID = '$inviteID'";
               
@@ -1488,17 +1467,19 @@
             $agentID  = $inviteInfo['AgentID'];
         
             return array('success' => 'true', 'GroupID'=>$groupID, 'RoleID'=>$roleID, 'AgentID'=>$agentID);
-        } else {
+        } 
+        else 
+        {
             return array('succeed' => 'false', 'error' => 'Invitation not found', 'params' => var_export($params, TRUE), 'sql' => $sql);
         }
     }
     
     function removeAgentToGroupInvite($params)
     {
-		if( is_array($error = secureRequest($params, TRUE)) )
-		{
-			return $error;
-		}
+        if( is_array($error = secureRequest($params, TRUE)) )
+        {
+            return $error;
+        }
 	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $inviteID = $params['InviteID'];
@@ -1515,127 +1496,128 @@
         return array('success' => 'true');
     }
     
-	function secureRequest($params, $write = FALSE)
-	{
-		global 	$groupWriteKey, $groupReadKey, $verifiedReadKey, $verifiedWriteKey, $groupRequireAgentAuthForWrite, $requestingAgent;
-		global  $overrideAgentUserService;
+	  function secureRequest($params, $write = FALSE)
+	  {
+        global $groupWriteKey, $groupReadKey, $verifiedReadKey, $verifiedWriteKey, $groupRequireAgentAuthForWrite, $requestingAgent;
+        global $overrideAgentUserService;
 
-		// Cache this for access by other security functions
-		$requestingAgent = $params['RequestingAgentID'];
-		
-		if( isset($groupReadKey) && ($groupReadKey != '') && (!isset($verifiedReadKey) || ($verifiedReadKey !== TRUE)) )
-		{
-			if( !isset($params['ReadKey']) || ($params['ReadKey'] != $groupReadKey ) )
-			{
-				return array('error' => "Invalid (or No) Read Key Specified", 'params' => var_export($params, TRUE));
-			} else {
-				$verifiedReadKey = TRUE;
-			}
-		}
-		
-		if( ($write == TRUE) && isset($groupWriteKey) && ($groupWriteKey != '') && (!isset($verifiedWriteKey) || ($verifiedWriteKey !== TRUE)) )
-		{
-			if( !isset($params['WriteKey']) || ($params['WriteKey'] != $groupWriteKey ) )
-			{
-				return array('error' => "Invalid (or No) Write Key Specified", 'params' => var_export($params, TRUE));
-			} else {
-				$verifiedWriteKey = TRUE;
-			}
-		}
-		
-		if( ($write == TRUE) && isset($groupRequireAgentAuthForWrite) && ($groupRequireAgentAuthForWrite == TRUE) )
-		{
-			// Note: my brain can't do boolean logic this morning, so just putting this here instead of integrating with line above.
-			// If the write key has already been verified for this request, don't check it again.  This comes into play with methods that call other methods, such as CreateGroup() which calls Addrole()
-			if( isset($verifiedWriteKey) && ($verifiedWriteKey !== TRUE))
-			{
-				return TRUE;
-			}
-		
-			if( !isset($params['RequestingAgentID']) 
-			 || !isset($params['RequestingAgentUserService'])
-			 || !isset($params['RequestingSessionID']) 
-			 )
-			{
-				return array('error' => "Requesting AgentID and SessionID must be specified", 'params' => var_export($params, TRUE));
-			}
-			
-			// NOTE: an AgentID and SessionID of $uuidZero will likely be a region making a request, that is not tied to a specific agent making the request.
-			
-			$UserService = $params['RequestingAgentUserService'];
-			if( isset($overrideAgentUserService) && ($overrideAgentUserService != "") )
-			{
-				$UserService = $overrideAgentUserService;
-			}
-			
-			
-			$client = new xmlrpc_client($UserService);
-			$client->return_type = 'phpvals';
-			
-			$verifyParams = new xmlrpcval(array('avatar_uuid' => new xmlrpcval($params['RequestingAgentID'], 'string')
-											   ,'session_id'  => new xmlrpcval($params['RequestingSessionID'], 'string'))
-										, 'struct');
+        // Cache this for access by other security functions
+        $requestingAgent = $params['RequestingAgentID'];
+        
+        if( isset($groupReadKey) && ($groupReadKey != '') && (!isset($verifiedReadKey) || ($verifiedReadKey !== TRUE)) )
+        {
+            if( !isset($params['ReadKey']) || ($params['ReadKey'] != $groupReadKey ) )
+            {
+                return array('error' => "Invalid (or No) Read Key Specified", 'params' => var_export($params, TRUE));
+            } 
+            else 
+            {
+                $verifiedReadKey = TRUE;
+            }
+        }
+        
+        if( ($write == TRUE) && isset($groupWriteKey) && ($groupWriteKey != '') && (!isset($verifiedWriteKey) || ($verifiedWriteKey !== TRUE)) )
+        {
+            if( !isset($params['WriteKey']) || ($params['WriteKey'] != $groupWriteKey ) )
+            {
+                return array('error' => "Invalid (or No) Write Key Specified", 'params' => var_export($params, TRUE));
+            } 
+            else 
+            {
+                $verifiedWriteKey = TRUE;
+            }
+        }
+        
+        if( ($write == TRUE) && isset($groupRequireAgentAuthForWrite) && ($groupRequireAgentAuthForWrite == TRUE) )
+        {
+            // Note: my brain can't do boolean logic this morning, so just putting this here instead of integrating with line above.
+            // If the write key has already been verified for this request, don't check it again.  This comes into play with methods that call other methods, such as CreateGroup() which calls Addrole()
+            if( isset($verifiedWriteKey) && ($verifiedWriteKey !== TRUE))
+            {
+                return TRUE;
+            }
+          
+            if( !isset($params['RequestingAgentID']) 
+                || !isset($params['RequestingAgentUserService'])
+                || !isset($params['RequestingSessionID']) )
+            {
+                return array('error' => "Requesting AgentID and SessionID must be specified", 'params' => var_export($params, TRUE));
+            }
+            
+            // NOTE: an AgentID and SessionID of $uuidZero will likely be a region making a request, that is not tied to a specific agent making the request.
+            
+            $UserService = $params['RequestingAgentUserService'];
+            if( isset($overrideAgentUserService) && ($overrideAgentUserService != "") )
+            {
+                $UserService = $overrideAgentUserService;
+            }
+            
+            $client = new xmlrpc_client($UserService);
+            $client->return_type = 'phpvals';
+            
+            $verifyParams = new xmlrpcval(array('avatar_uuid' => new xmlrpcval($params['RequestingAgentID'], 'string')
+                           ,'session_id'  => new xmlrpcval($params['RequestingSessionID'], 'string'))
+                           , 'struct');
 
-			$message = new xmlrpcmsg("check_auth_session", array($verifyParams));
-			$resp = $client->send($message, 5);
-			if ($resp->faultCode()) 
-			{
-				return array('error' => "Error validating AgentID and SessionID"
-				           , 'xmlrpcerror'=> $resp->faultString()
-						   , 'params' => var_export($params, TRUE));
-			} 
-			
-			$verifyReturn = $resp->value();
-			
-			
-			if( !isset($verifyReturn['auth_session']) || ($verifyReturn['auth_session'] != 'TRUE') )
-			{
-				return array('error' => "UserService.check_auth_session() did not return TRUE"
-						   , 'userservice' => var_export($verifyReturn, TRUE)
-						   , 'params' => var_export($params, TRUE));
-				
-			}
-		}
-		
-		return TRUE;
-	}
+            $message = new xmlrpcmsg("check_auth_session", array($verifyParams));
+            $resp = $client->send($message, 5);
+            if ($resp->faultCode()) 
+            {
+                return array('error' => "Error validating AgentID and SessionID"
+                             , 'xmlrpcerror'=> $resp->faultString()
+                             , 'params' => var_export($params, TRUE));
+            } 
+        
+            $verifyReturn = $resp->value();
+        
+            if( !isset($verifyReturn['auth_session']) || ($verifyReturn['auth_session'] != 'TRUE') )
+            {
+                return array('error' => "UserService.check_auth_session() did not return TRUE"
+                             , 'userservice' => var_export($verifyReturn, TRUE)
+                             , 'params' => var_export($params, TRUE));
+              
+            }
+        }
+        
+        return TRUE;
+	  }
 
-	function checkGroupPermission($GroupID, $Permission)
-	{
+    function checkGroupPermission($GroupID, $Permission)
+    {
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
 		
-		if( !isset($Permission) || ($Permission == 0) )
-		{
+        if( !isset($Permission) || ($Permission == 0) )
+        {
             return array('error' => 'No Permission value specified for checkGroupPermission'
                        , 'Permission' => $Permission);
-		}
+        }
 		
-		// If it isn't set to true, then always return true, otherwise verify they have perms
-		if( !isset($groupEnforceGroupPerms) || ($groupEnforceGroupPerms != TRUE) )
-		{
-			return true;
-		}
-		
-		if( !isset($requestingAgent) || ($requestingAgent == $uuidZero) )
-		{
+        // If it isn't set to true, then always return true, otherwise verify they have perms
+        if( !isset($groupEnforceGroupPerms) || ($groupEnforceGroupPerms != TRUE) )
+        {
+            return true;
+        }
+        
+        if( !isset($requestingAgent) || ($requestingAgent == $uuidZero) )
+        {
             return array('error' => 'Requesting agent was either not specified or not validated.'
                        , 'requestingAgent' => $requestingAgent);
-		}
-		
-		$params = array('AgentID' => $requestingAgent, 'GroupID' => $GroupID);
-		$reqAgentMembership = getAgentGroupMembership($params);
+        }
+        
+        $params = array('AgentID' => $requestingAgent, 'GroupID' => $GroupID);
+        $reqAgentMembership = getAgentGroupMembership($params);
 
-		if( isset($reqAgentMembership['error'] ) )
-		{
+        if( isset($reqAgentMembership['error'] ) )
+        {
             return array('error' => 'Could not get agent membership for group'
                        , 'params' => var_export($params, TRUE)
-					   , 'nestederror' => $reqAgentMembership['error']);
-		}
+             , 'nestederror' => $reqAgentMembership['error']);
+        }
 
-		// Worlds ugliest bitwise operation, EVER
-		$PermMask   = $reqAgentMembership['GroupPowers'];
-		$PermValue  = $Permission;
-		
+        // Worlds ugliest bitwise operation, EVER
+        $PermMask   = $reqAgentMembership['GroupPowers'];
+        $PermValue  = $Permission;
+        
         global $groupDBCon;
         $sql = " SELECT $PermMask & $PermValue AS Allowed";
         $results = mysql_query($sql, $groupDBCon);
@@ -1643,29 +1625,29 @@
         {
             echo print_r( array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error()));
         }
-		$PermMasked = mysql_result($results, 0);
-		
-		if( $PermMasked != $Permission )
-		{
-			$permNames = array_flip($groupPowers);
+        $PermMasked = mysql_result($results, 0);
+        
+        if( $PermMasked != $Permission )
+        {
+            $permNames = array_flip($groupPowers);
+
             return array('error' => 'Agent does not have group power to ' . $Permission .'('.$permNames[$Permission].')'
-					   , 'PermMasked' => $PermMasked
+             , 'PermMasked' => $PermMasked
                        , 'params' => var_export($params, TRUE)
-					   , 'permBitMaskSql' => $sql
-					   , 'Permission' => $Permission);
-		}
-		
-		/*
-		return array('error' => 'Reached end'
-				   , 'reqAgentMembership' => var_export($reqAgentMembership, TRUE)
-				   , 'GroupID' => $GroupID
-				   , 'Permission' => $Permission
-				   , 'PermMasked' => $PermMasked
-				   );
-		*/
-		return TRUE;
-		
-	}
+             , 'permBitMaskSql' => $sql
+             , 'Permission' => $Permission);
+        }
+        
+        /*
+        return array('error' => 'Reached end'
+               , 'reqAgentMembership' => var_export($reqAgentMembership, TRUE)
+               , 'GroupID' => $GroupID
+               , 'Permission' => $Permission
+               , 'PermMasked' => $PermMasked
+               );
+        */
+        return TRUE;
+    }
 	
     
     $s = new xmlrpc_server(array(
@@ -1711,24 +1693,23 @@
 
     $s->functions_parameters_type = 'phpvals';
     if (isset($debugXMLRPC) && $debugXMLRPC > 0 && isset($debugXMLRPCFile) && $debugXMLRPCFile != "") 
-	{
-		$s->setDebug($debugXMLRPC);
+	  {
+		    $s->setDebug($debugXMLRPC);
     }
     $s->service();
+
     if (isset($debugXMLRPC) && $debugXMLRPC > 0 && isset($debugXMLRPCFile) && $debugXMLRPCFile != "") 
-	{
-		$f = fopen($debugXMLRPCFile,"a");
-		fwrite($f,"\n----- " . date("Y-m-d H:i:s") . " -----\n");
-		$debugInfo = $s->serializeDebug();
-		$debugInfo = split("\n",$debugInfo);
-		unset($debugInfo[0]);
-		unset($debugInfo[count($debugInfo) -1]);
-		$debugInfo = join("\n",$debugInfo);	
-		fwrite($f,base64_decode($debugInfo));
-		fclose($f);
+	  {
+        $f = fopen($debugXMLRPCFile,"a");
+        fwrite($f,"\n----- " . date("Y-m-d H:i:s") . " -----\n");
+        $debugInfo = $s->serializeDebug();
+        $debugInfo = split("\n",$debugInfo);
+        unset($debugInfo[0]);
+        unset($debugInfo[count($debugInfo) -1]);
+        $debugInfo = join("\n",$debugInfo);	
+        fwrite($f,base64_decode($debugInfo));
+        fclose($f);
     }
     
     mysql_close($groupDBCon);
-
-    
 ?>
