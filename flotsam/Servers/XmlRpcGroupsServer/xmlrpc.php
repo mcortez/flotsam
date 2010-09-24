@@ -140,32 +140,45 @@
 
     function createGroup($params)
     {
-		    if( is_array($error = secureRequest($params, TRUE)) )
+        if( is_array($error = secureRequest($params, TRUE)) )
         {
           return $error;
         }
 	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
 
-        $groupID = $params["GroupID"];
-        $name = addslashes( $params["Name"] );
-        $charter = addslashes( $params["Charter"] );
-        $insigniaID = $params["InsigniaID"];
-        $founderID = $params["FounderID"];
-        $membershipFee = $params["MembershipFee"];
+        $groupID        = $params["GroupID"];
+        $name           = $params["Name"];
+        $charter        = $params["Charter"];
+        $insigniaID     = $params["InsigniaID"];
+        $founderID      = $params["FounderID"];
+        $membershipFee  = $params["MembershipFee"];
         $openEnrollment = $params["OpenEnrollment"];
-        $showInList = $params["ShowInList"];
-        $allowPublish = $params["AllowPublish"];
-        $maturePublish = $params["MaturePublish"];
-        $ownerRoleID = $params["OwnerRoleID"];
+        $showInList     = $params["ShowInList"];
+        $allowPublish   = $params["AllowPublish"];
+        $maturePublish  = $params["MaturePublish"];
+        $ownerRoleID    = $params["OwnerRoleID"];
         $everyonePowers = $params["EveryonePowers"];
-        $ownersPowers = $params["OwnersPowers"];
+        $ownersPowers   = $params["OwnersPowers"];
         
+        $escapedParams         = array_map("mysql_real_escape_string", $params);
+        $escapedGroupID        = $escapedParams["GroupID"];
+        $escapedName           = $escapedParams["Name"];
+        $escapedCharter        = $escapedParams["Charter"];
+        $escapedInsigniaID     = $escapedParams["InsigniaID"];
+        $escapedFounderID      = $escapedParams["FounderID"];
+        $escapedMembershipFee  = $escapedParams["MembershipFee"];
+        $escapedOpenEnrollment = $escapedParams["OpenEnrollment"];
+        $escapedShowInList     = $escapedParams["ShowInList"];
+        $escapedAllowPublish   = $escapedParams["AllowPublish"];
+        $escapedMaturePublish  = $escapedParams["MaturePublish"];
+        $escapedOwnerRoleID    = $escapedParams["OwnerRoleID"];
+
         // Create group
         $sql = "INSERT INTO osgroup
                 (GroupID, Name, Charter, InsigniaID, FounderID, MembershipFee, OpenEnrollment, ShowInList, AllowPublish, MaturePublish, OwnerRoleID)
                 VALUES
-                ('$groupID', '$name', '$charter', '$insigniaID', '$founderID', $membershipFee, $openEnrollment, $showInList, $allowPublish, $maturePublish, '$ownerRoleID')";
+                ('$escapedGroupID', '$escapedName', '$escapedCharter', '$escapedInsigniaID', '$escapedFounderID', $escapedMembershipFee, $escapedOpenEnrollment, $escapedShowInList, $escapedAllowPublish, $escapedMaturePublish, '$escapedOwnerRoleID')";
         
         if (!mysql_query($sql, $groupDBCon))
         {
