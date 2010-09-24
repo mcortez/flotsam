@@ -1094,8 +1094,6 @@
             return $error;
         }
 		
-		    secureRequest($params, FALSE);
-		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
         $agentID = mysql_real_escape_string($params['AgentID']);
         
