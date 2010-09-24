@@ -142,7 +142,7 @@
     {
         if( is_array($error = secureRequest($params, TRUE)) )
         {
-          return $error;
+            return $error;
         }
 	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
@@ -228,15 +228,15 @@
 	  // Private method, does not include security, to only be called from places that have already verified security
     function _addRoleToGroup($params)
     {
-		    $everyonePowers = 8796495740928; // This should now be fixed, when libomv was updated...		
+        $everyonePowers = 8796495740928; // This should now be fixed, when libomv was updated...		
 	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $groupID = $params['GroupID'];
-        $roleID  = $params['RoleID'];
-        $name    = addslashes( $params['Name'] );
-        $desc    = addslashes( $params['Description'] );
-        $title   = addslashes( $params['Title'] );
-        $powers  = $params['Powers'];
+        $groupID = mysql_real_escape_string( $params['GroupID'] );
+        $roleID  = mysql_real_escape_string( $params['RoleID'] );
+        $name    = mysql_real_escape_string( $params['Name'] );
+        $desc    = mysql_real_escape_string( $params['Description'] );
+        $title   = mysql_real_escape_string( $params['Title'] );
+        $powers  = mysql_real_escape_string( $params['Powers'] );
 
         if( !isset($powers) || ($powers == 0) || ($powers == '') )
         {
@@ -283,12 +283,12 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $groupID = $params['GroupID'];
-        $roleID  = $params['RoleID'];
-        $name    = addslashes( $params['Name'] );
-        $desc    = addslashes( $params['Description'] );
-        $title   = addslashes( $params['Title'] );
-        $powers  = $params['Powers'];
+        $groupID = mysql_real_escape_string( $params['GroupID'] );
+        $roleID  = mysql_real_escape_string( $params['RoleID'] );
+        $name    = mysql_real_escape_string( $params['Name'] );
+        $desc    = mysql_real_escape_string( $params['Description'] );
+        $title   = mysql_real_escape_string( $params['Title'] );
+        $powers  = mysql_real_escape_string( $params['Powers'] );
         
         // Verify the requesting agent has permission
         if( is_array($error = checkGroupPermission($groupID, $groupPowers['RoleProperties'])) )
@@ -332,8 +332,8 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $groupID = $params['GroupID'];
-        $roleID  = $params['RoleID'];
+        $groupID = mysql_real_escape_string( $params['GroupID'] );
+        $roleID  = mysql_real_escape_string( $params['RoleID'] );
         
         if( is_array($error = checkGroupPermission($groupID, $groupPowers['RoleProperties'])) )
         {
@@ -387,11 +387,11 @@
 
         if( isset($params['GroupID']) )
         {
-            $sql .= "osgroup.GroupID = '".$params['GroupID']."'";
+            $sql .= "osgroup.GroupID = '" . mysql_real_escape_string($params['GroupID']). "'";
         } 
         else if( isset($params['Name']) ) 
         {
-            $sql .= "osgroup.Name = '".addslashes($params['Name'])."'";
+            $sql .= "osgroup.Name = '" . mysql_real_escape_string($params['Name']) . "'";
         } 
         else 
         {
@@ -423,14 +423,14 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $groupID = $params["GroupID"];
-        $charter = addslashes( $params["Charter"] );
-        $insigniaID = $params["InsigniaID"];
-        $membershipFee = $params["MembershipFee"];
-        $openEnrollment = $params["OpenEnrollment"];
-        $showInList = $params["ShowInList"];
-        $allowPublish = $params["AllowPublish"];
-        $maturePublish = $params["MaturePublish"];
+        $groupID = mysql_real_escape_string( $params["GroupID"] );
+        $charter = mysql_real_escape_string( $params["Charter"] );
+        $insigniaID = mysql_real_escape_string( $params["InsigniaID"] );
+        $membershipFee = mysql_real_escape_string( $params["MembershipFee"] );
+        $openEnrollment = mysql_real_escape_string( $params["OpenEnrollment"] );
+        $showInList = mysql_real_escape_string( $params["ShowInList"] );
+        $allowPublish = mysql_real_escape_string( $params["AllowPublish"] );
+        $maturePublish = mysql_real_escape_string( $params["MaturePublish"] );
         
         if( is_array($error = checkGroupPermission($groupID, $groupPowers['ChangeOptions'])) )
         {
@@ -466,7 +466,7 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $search = addslashes( $params['Search'] );
+        $search = mysql_real_escape_string( $params['Search'] );
         
         $sql = " SELECT osgroup.GroupID, osgroup.Name, count(osgroupmembership.AgentID) as Members "
               ." FROM osgroup LEFT JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID) "
@@ -503,8 +503,8 @@
     function _setAgentActiveGroup($params)
     {
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $agentID = $params['AgentID'];
-        $groupID = $params['GroupID'];
+        $agentID = mysql_real_escape_string( $params['AgentID'] );
+        $groupID = mysql_real_escape_string( $params['GroupID'] );
 		
         $sql = " UPDATE osagent "
               ." SET ActiveGroupID = '$groupID'"
@@ -552,17 +552,17 @@
     {
         if( is_array($error = secureRequest($params, TRUE)) )
         {
-          return $error;
+            return $error;
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params["GroupID"];
-        $agentID = $params["AgentID"];
+        $agentID = $params["AgentID"];        
 		
         if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
         {
             // If they don't have direct permission, check to see if the group is marked for open enrollment
-            $groupInfo = _getGroup( array ('GroupID'=>$groupID) );
+            $groupInfo = _getGroup( array ('GroupID' => $groupID) );
           
             if( isset($groupInfo['error']))
             {
@@ -571,9 +571,12 @@
 
             if($groupInfo['OpenEnrollment'] != 1)
             {
+                $escapedAgentID = mysql_real_escape_string($agentID);
+                $escapedGroupID = mysql_real_escape_string($groupID);
+
                 // Group is not open enrollment, check if the specified agentid has an invite
                 $sql = " SELECT GroupID, RoleID, AgentID FROM osgroupinvite"
-                      ." WHERE osgroupinvite.AgentID = '$agentID' AND osgroupinvite.GroupID = '$groupID'";
+                      ." WHERE osgroupinvite.AgentID = '$escapedAgentID' AND osgroupinvite.GroupID = '$escapedGroupID'";
                         
                 $results = mysql_query($sql, $groupDBCon);
                 if (!$results) 
@@ -610,9 +613,13 @@
         {
             $roleID = $params["RoleID"];
         }
+
+        $escapedAgentID = mysql_real_escape_string($agentID);
+        $escapedGroupID = mysql_real_escape_string($groupID);
+        $escapedRoleID = mysql_real_escape_string($roleID);
     
         // Check if agent already a member
-        $sql = " SELECT count(AgentID) as isMember FROM osgroupmembership WHERE AgentID = '$agentID' AND GroupID = '$groupID'";
+        $sql = " SELECT count(AgentID) as isMember FROM osgroupmembership WHERE AgentID = '$escapedAgentID' AND GroupID = '$escapedGroupID'";
         $result = mysql_query($sql, $groupDBCon);
         if (!$result)
         {
@@ -623,7 +630,7 @@
         if( mysql_result($result, 0) == 0 )
         {
             $sql = " INSERT INTO osgroupmembership (GroupID, AgentID, Contribution, ListInProfile, AcceptNotices, SelectedRoleID) VALUES "
-                  ."('$groupID','$agentID', 0, 1, 1,'$roleID')";
+                  ."('$escapedGroupID','$escapedAgentID', 0, 1, 1,'$escapedRoleID')";
         
             if (!mysql_query($sql, $groupDBCon))
             {
@@ -676,6 +683,9 @@
                 return $error;
             }
         }
+
+        $escapedAgentID = mysql_real_escape_string($agentID);
+        $escapedGroupID = mysql_real_escape_string($groupID);
 		
         // 1. If group is agent's active group, change active group to uuidZero
         // 2. Remove Agent from group (osgroupmembership)
@@ -683,7 +693,7 @@
         
         $sql = " UPDATE osagent "
               ." SET ActiveGroupID = '$uuidZero'"
-              ." WHERE AgentID = '$agentID' AND ActiveGroupID = '$groupID'";
+              ." WHERE AgentID = '$escapedAgentID' AND ActiveGroupID = '$escapedGroupID'";
 
         if (!mysql_query($sql, $groupDBCon))
         {
@@ -698,7 +708,7 @@
         }
         
         $sql = " DELETE FROM osgrouprolemembership "
-              ." WHERE AgentID = '$agentID' AND GroupID = '$groupID'";
+              ." WHERE AgentID = '$escapedAgentID' AND GroupID = '$escapedGroupID'";
         if (!mysql_query($sql, $groupDBCon))
         {
             return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
@@ -710,9 +720,9 @@
     function _addAgentToGroupRole($params)
     {
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $agentID = $params["AgentID"];
-        $groupID = $params["GroupID"];
-        $roleID = $params["RoleID"];
+        $agentID = mysql_real_escape_string($params["AgentID"]);
+        $groupID = mysql_real_escape_string($params["GroupID"]);
+        $roleID = mysql_real_escape_string($params["RoleID"]);
     
         // Check if agent already a member
         $sql = " SELECT count(AgentID) as isMember FROM osgrouprolemembership WHERE AgentID = '$agentID' AND RoleID = '$roleID' AND GroupID = '$groupID'";
@@ -747,11 +757,15 @@
         $agentID = $params["AgentID"];
         $groupID = $params["GroupID"];
         $roleID = $params["RoleID"];
+
+        $escapedAgentID = mysql_real_escape_string($agentID);
+        $escapedGroupID = mysql_real_escape_string($groupID);
+        $escapedRoleID = mysql_real_escape_string($roleID);
     
         // Check if being assigned to Owners role, assignments to an owners role can only be requested by owners.
         $sql = " SELECT OwnerRoleID, osgrouprolemembership.AgentID "
               ." FROM osgroup LEFT JOIN osgrouprolemembership ON (osgroup.GroupID = osgrouprolemembership.GroupID AND osgroup.OwnerRoleID = osgrouprolemembership.RoleID) "
-            ." WHERE osgrouprolemembership.AgentID = '$requestingAgent' AND osgroup.GroupID = '$groupID'";
+            ." WHERE osgrouprolemembership.AgentID = '" . mysql_real_escape_string($requestingAgent) . "' AND osgroup.GroupID = '$escapedGroupID'";
 			  
         $results = mysql_query($sql, $groupDBCon);
         if (!$results) 
@@ -761,8 +775,8 @@
 		
         if( mysql_num_rows($results) == 0 )
         {
-			      return array('error' => "Group ($groupID) not found or Agent ($agentID) is not in the owner's role", 'params' => var_export($params, TRUE));
-		    }
+			return array('error' => "Group ($groupID) not found or Agent ($agentID) is not in the owner's role", 'params' => var_export($params, TRUE));
+		}
 
         $ownerRoleInfo = mysql_fetch_assoc($results);
         if( ($ownerRoleInfo['OwnerRoleID'] == $roleID) && ($ownerRoleInfo['AgentID'] != $requestingAgent) )
@@ -775,7 +789,7 @@
             return $error;
         }
 	
-		    return _addAgentToGroupRole($params);
+		return _addAgentToGroupRole($params);
     }
     
     function removeAgentFromGroupRole($params)
@@ -786,13 +800,13 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $agentID = $params["AgentID"];
-        $groupID = $params["GroupID"];
-        $roleID  = $params["RoleID"];
+        $agentID = mysql_real_escape_string($params["AgentID"]);
+        $groupID = mysql_real_escape_string($params["GroupID"]);
+        $roleID  = mysql_real_escape_string($params["RoleID"]);
 
         if( is_array($error = checkGroupPermission($groupID, $groupPowers['AssignMember'])) )
         {
-          return $error;
+            return $error;
         }
 		
         // If agent has this role selected, change their selection to everyone (uuidZero) role
@@ -816,9 +830,9 @@
     function _setAgentGroupSelectedRole($params)
     {
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $agentID = $params["AgentID"];
-        $groupID = $params["GroupID"];
-        $roleID = $params["RoleID"];
+        $agentID = mysql_real_escape_string($params["AgentID"]);
+        $groupID = mysql_real_escape_string($params["GroupID"]);
+        $roleID = mysql_real_escape_string($params["RoleID"]);
     
         $sql = " UPDATE osgroupmembership SET SelectedRoleID = '$roleID' WHERE AgentID = '$agentID' AND GroupID = '$groupID'";
         $result = mysql_query($sql, $groupDBCon);
@@ -858,8 +872,8 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $groupID = $params['GroupID'];
-        $agentID = $params['AgentID'];
+        $groupID = mysql_real_escape_string($params['GroupID']);
+        $agentID = mysql_real_escape_string($params['AgentID']);
         
         $sql = " SELECT osgroup.GroupID, osgroup.Name as GroupName, osgroup.Charter, osgroup.InsigniaID, osgroup.FounderID, osgroup.MembershipFee, osgroup.OpenEnrollment, osgroup.ShowInList, osgroup.AllowPublish, osgroup.MaturePublish"
               ." , osgroupmembership.Contribution, osgroupmembership.ListInProfile, osgroupmembership.AcceptNotices"
@@ -904,7 +918,7 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $agentID = $params['AgentID'];
+        $agentID = mysql_real_escape_string($params['AgentID']);
         
         $sql = " SELECT osgroup.GroupID, osgroup.Name as GroupName, osgroup.Charter, osgroup.InsigniaID, osgroup.FounderID, osgroup.MembershipFee, osgroup.OpenEnrollment, osgroup.ShowInList, osgroup.AllowPublish, osgroup.MaturePublish"
               ." , osgroupmembership.Contribution, osgroupmembership.ListInProfile, osgroupmembership.AcceptNotices"
@@ -945,12 +959,17 @@
         return $groupResults;
     }
     
+    // Parameters should not already be mysql_real_escape_string() escaped
     function canAgentViewRoleMembers( $agentID, $groupID, $roleID )
     {
         global $membersVisibleTo, $groupDBCon;
 		
         if( $membersVisibleTo == 'All' ) 
           return true;
+
+        $agentID = mysql_real_escape_string($agentID);
+        $groupID = mysql_real_escape_string($groupID);
+        $roleID  = mysql_real_escape_string($roleID); 
 		
         $sql  = " SELECT CASE WHEN min(OwnerRoleMembership.AgentID) IS NOT NULL THEN 1 ELSE 0 END AS IsOwner ";
         $sql .= " FROM osgroup JOIN osgroupmembership ON (osgroup.GroupID = osgroupmembership.GroupID AND osgroupmembership.AgentID = '$agentID')";
@@ -992,6 +1011,7 @@
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
         $groupID = $params['GroupID'];
+        $escapedGroupID = mysql_real_escape_string($groupID);
         
         $sql = " SELECT osgroupmembership.AgentID"
               ." , osgroupmembership.Contribution, osgroupmembership.ListInProfile, osgroupmembership.AcceptNotices"
@@ -1003,7 +1023,7 @@
               ."         LEFT JOIN osgrouprolemembership AS OwnerRoleMembership ON (osgroup.OwnerRoleID       = OwnerRoleMembership.RoleID 
                                                                                AND (osgroup.GroupID           = OwnerRoleMembership.GroupID)
                                                                                AND (osgroupmembership.AgentID = OwnerRoleMembership.AgentID))"
-              ." WHERE osgroup.GroupID = '$groupID'";
+              ." WHERE osgroup.GroupID = '$escapedGroupID'";
         
         $groupmemberResults = mysql_query($sql, $groupDBCon);
         if (!$groupmemberResults) 
@@ -1025,7 +1045,7 @@
             $agentID = $memberInfo['AgentID'];
             $sql = " SELECT BIT_OR(osrole.Powers) AS AgentPowers, ( BIT_OR(osrole.Powers) & $roleMembersVisibleBit) as MemberVisible"
                   ." FROM osgrouprolemembership JOIN osrole ON (osgrouprolemembership.GroupID = osrole.GroupID AND osgrouprolemembership.RoleID = osrole.RoleID)"
-                  ." WHERE osgrouprolemembership.GroupID = '$groupID' AND osgrouprolemembership.AgentID = '$agentID'";
+                  ." WHERE osgrouprolemembership.GroupID = '$escapedGroupID' AND osgrouprolemembership.AgentID = '$agentID'";
             $memberPowersResult = mysql_query($sql, $groupDBCon);
             if (!$memberPowersResult) 
             {
@@ -1034,10 +1054,10 @@
             
             if (mysql_num_rows($memberPowersResult) == 0) 
             {
-				        if( $canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
-				        {
-					          $memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
-				        } 
+                if( $canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
+                {
+                    $memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
+                } 
                 else 
                 {
                     // if can't view all group role members and there is no Member Visible bit, then don't return this member's info
@@ -1077,7 +1097,7 @@
 		    secureRequest($params, FALSE);
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $agentID = $params['AgentID'];
+        $agentID = mysql_real_escape_string($params['AgentID']);
         
         $sql = " SELECT osgroup.GroupID, osgroup.Name as GroupName, osgroup.Charter, osgroup.InsigniaID, osgroup.FounderID, osgroup.MembershipFee, osgroup.OpenEnrollment, osgroup.ShowInList, osgroup.AllowPublish, osgroup.MaturePublish"
               ." , osgroupmembership.Contribution, osgroupmembership.ListInProfile, osgroupmembership.AcceptNotices"
@@ -1121,7 +1141,7 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $agentID = $params['AgentID'];
+        $agentID = mysql_real_escape_string($params['AgentID']);
         
         $sql = " SELECT "
               ." osrole.RoleID, osrole.GroupID, osrole.Title, osrole.Name, osrole.Description, osrole.Powers"
@@ -1166,7 +1186,7 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $groupID = $params['GroupID'];
+        $groupID = mysql_real_escape_string($params['GroupID']);
         
         $sql = " SELECT "
               ." osrole.RoleID, osrole.Name, osrole.Title, osrole.Description, osrole.Powers, count(osgrouprolemembership.AgentID) as Members"
@@ -1203,16 +1223,18 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $groupID = $params['GroupID'];
+        $groupID = $params['GroupID'];        
 		
         $roleMembersVisibleBit = $groupPowers['RoleMembersVisible'];
         $canViewAllGroupRoleMembers = canAgentViewRoleMembers($requestingAgent, $groupID, '');
 		
+        $escapedGroupID = mysql_real_escape_string($groupID);
+
         $sql = " SELECT "
               ." osrole.RoleID, osgrouprolemembership.AgentID"
 	      		  ." , (osrole.Powers & $roleMembersVisibleBit) as MemberVisible"
               ." FROM osrole JOIN osgrouprolemembership ON (osrole.GroupID = osgrouprolemembership.GroupID AND osrole.RoleID = osgrouprolemembership.RoleID)"
-              ." WHERE osrole.GroupID = '$groupID'";
+              ." WHERE osrole.GroupID = '$escapedGroupID'";
               
         $memberResults = mysql_query($sql, $groupDBCon);
         if (!$memberResults) 
@@ -1253,27 +1275,27 @@
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
 		
         if (isset($params['AgentID'])) {
-            $agentID = $params['AgentID'];
+            $agentID = mysql_real_escape_string($params['AgentID']);
         } else {
             $agentID = "";
         }
         if (isset($params['GroupID'])) {
-            $groupID = $params['GroupID'];
+            $groupID = mysql_real_escape_string($params['GroupID']);
         } else {
             $groupID = "";
         }
         if (isset($params['SelectedRoleID'])) {
-            $roleID  = $params['SelectedRoleID'];
+            $roleID  = mysql_real_escape_string($params['SelectedRoleID']);
         } else {
             $roleID = "";
         }
         if (isset($params['AcceptNotices'])) {
-            $acceptNotices  = $params['AcceptNotices'];
+            $acceptNotices = mysql_real_escape_string($params['AcceptNotices']);
         } else {
             $acceptNotices = 1;
         }
         if (isset($params['ListInProfile'])) {
-            $listInProfile  = $params['ListInProfile'];
+            $listInProfile  = mysql_real_escape_string($params['ListInProfile']);
         } else {
             $listInProfile = 0;
         }
@@ -1320,7 +1342,7 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $groupID = $params['GroupID'];
+        $groupID = mysql_real_escape_string($params['GroupID']);
         
         $sql = " SELECT "
               ." GroupID, NoticeID, Timestamp, FromName, Subject, Message, BinaryBucket"
@@ -1356,7 +1378,7 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $noticeID = $params['NoticeID'];
+        $noticeID = mysql_real_escape_string($params['NoticeID']);
         
         $sql = " SELECT "
               ." GroupID, NoticeID, Timestamp, FromName, Subject, Message, BinaryBucket"
@@ -1385,13 +1407,13 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $groupID  = $params['GroupID'];
-        $noticeID = $params['NoticeID'];
-        $fromName = addslashes($params['FromName']);
-        $subject  = addslashes($params['Subject']);
-        $binaryBucket = $params['BinaryBucket'];
-        $message      = addslashes($params['Message']);
-        $timeStamp    = $params['TimeStamp'];
+        $groupID        = mysql_real_escape_string($params['GroupID']);
+        $noticeID       = mysql_real_escape_string($params['NoticeID']);
+        $fromName       = mysql_real_escape_string($params['FromName']);
+        $subject        = mysql_real_escape_string($params['Subject']);
+        $binaryBucket   = mysql_real_escape_string($params['BinaryBucket']);
+        $message        = mysql_real_escape_string($params['Message']);
+        $timeStamp      = mysql_real_escape_string($params['TimeStamp']);
 
         if( is_array($error = checkGroupPermission($groupID, $groupPowers['SendNotices'])) )
         {
@@ -1420,15 +1442,16 @@
         }
 		
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon, $groupPowers;
-        $inviteID = $params['InviteID'];
-        $groupID = $params['GroupID'];
-        $roleID  = $params['RoleID'];
-        $agentID = $params['AgentID'];
 
-        if( is_array($error = checkGroupPermission($groupID, $groupPowers['Invite'])) )
+        if( is_array($error = checkGroupPermission($params['GroupID'], $groupPowers['Invite'])) )
         {
-          return $error;
+            return $error;
         }
+
+        $inviteID   = mysql_real_escape_string($params['InviteID']);
+        $groupID    = mysql_real_escape_string($params['GroupID']);
+        $roleID     = mysql_real_escape_string($params['RoleID']);
+        $agentID    = mysql_real_escape_string($params['AgentID']);
 		
         // Remove any existing invites for this agent to this group
         $sql = " DELETE FROM osgroupinvite"
@@ -1461,7 +1484,7 @@
         }
 
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $inviteID = $params['InviteID'];
+        $inviteID = mysql_real_escape_string($params['InviteID']);
 
         $sql = " SELECT GroupID, RoleID, AgentID FROM osgroupinvite"
               ." WHERE osgroupinvite.InviteID = '$inviteID'";
@@ -1495,7 +1518,7 @@
         }
 	
         global $groupEnforceGroupPerms, $requestingAgent, $uuidZero, $groupDBCon;
-        $inviteID = $params['InviteID'];
+        $inviteID = mysql_real_escape_string($params['InviteID']);
         
         $sql = " DELETE FROM osgroupinvite"
               ." WHERE osgroupinvite.InviteID = '$inviteID'";
@@ -1509,8 +1532,8 @@
         return array('success' => 'true');
     }
     
-	  function secureRequest($params, $write = FALSE)
-	  {
+    function secureRequest($params, $write = FALSE)
+    {
         global $groupWriteKey, $groupReadKey, $verifiedReadKey, $verifiedWriteKey, $groupRequireAgentAuthForWrite, $requestingAgent;
         global $overrideAgentUserService;
 
@@ -1593,7 +1616,7 @@
         }
         
         return TRUE;
-	  }
+    }
 
     function checkGroupPermission($GroupID, $Permission)
     {
