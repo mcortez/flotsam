@@ -1051,10 +1051,13 @@
             {
                 return array('error' => "Could not successfully run query ($sql) from DB: " . mysql_error(), 'params' => var_export($params, TRUE));
             }
-            
-            if (mysql_num_rows($memberPowersResult) == 0) 
+
+            $memberPowersCount = mysql_num_rows($memberPowersResult);
+            # error_log("Found $memberPowersCount rows for agent $agentID for requesting agent $requestingAgent");
+
+            if ($memberPowersCount == 0) 
             {
-                if( $canViewAllGroupRoleMembers || ($memberResults[$agentID] == $requestingAgent))
+                if ($canViewAllGroupRoleMembers || $agentID == $requestingAgent)
                 {
                     $memberResults[$agentID] = array_merge($memberInfo, array('AgentPowers' => 0));
                 } 
@@ -1067,7 +1070,7 @@
             else 
             {
                 $memberPowersInfo = mysql_fetch_assoc($memberPowersResult);
-                if( $memberPowersInfo['MemberVisible'] || $canViewAllGroupRoleMembers  || ($memberResults[$agentID] == $requestingAgent))
+                if ($memberPowersInfo['MemberVisible'] || $canViewAllGroupRoleMembers || $agentID == $requestingAgent)
                 {
                     $memberResults[$agentID] = array_merge($memberInfo, $memberPowersInfo);
                 } 
@@ -1078,6 +1081,8 @@
                 }
             }
         }
+
+        # error_log("Returning " . count($memberResults) . " visible members for group $groupID for agent $agentID");
         
         if (count($memberResults) == 0) 
         {
