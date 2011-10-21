@@ -1053,7 +1053,7 @@
             }
 
             $memberPowersCount = mysql_num_rows($memberPowersResult);
-            # error_log("Found $memberPowersCount rows for agent $agentID for requesting agent $requestingAgent");
+            error_log("Found $memberPowersCount rows for agent $agentID for requesting agent $requestingAgent");
 
             if ($memberPowersCount == 0) 
             {
@@ -1082,7 +1082,7 @@
             }
         }
 
-        # error_log("Returning " . count($memberResults) . " visible members for group $groupID for agent $agentID");
+        error_log("Returning " . count($memberResults) . " visible members for group $groupID for agent $agentID");
         
         if (count($memberResults) == 0) 
         {

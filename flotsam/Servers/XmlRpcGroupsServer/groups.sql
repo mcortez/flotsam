@@ -1,17 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 2.6.4-pl3
--- http://www.phpmyadmin.net
--- 
--- Host: db819.perfora.net
--- Generation Time: Apr 18, 2009 at 05:56 PM
--- Server version: 4.0.27
--- PHP Version: 4.3.10-200.schlund.1
--- 
--- Database: `db281670270`
--- 
-
--- --------------------------------------------------------
-
 -- 
 -- Table structure for table `osagent`
 -- 
@@ -20,7 +6,7 @@ CREATE TABLE `osagent` (
   `AgentID` varchar(128) NOT NULL default '',
   `ActiveGroupID` varchar(128) NOT NULL default '',
   PRIMARY KEY  (`AgentID`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 
 -- --------------------------------------------------------
 
@@ -43,7 +29,7 @@ CREATE TABLE `osgroup` (
   PRIMARY KEY  (`GroupID`),
   UNIQUE KEY `Name` (`Name`),
   FULLTEXT KEY `Name_2` (`Name`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 
 -- --------------------------------------------------------
 
@@ -56,10 +42,10 @@ CREATE TABLE `osgroupinvite` (
   `GroupID` varchar(128) NOT NULL default '',
   `RoleID` varchar(128) NOT NULL default '',
   `AgentID` varchar(128) NOT NULL default '',
-  `TMStamp` timestamp(14) NOT NULL,
+  `TMStamp` timestamp NOT NULL,
   PRIMARY KEY  (`InviteID`),
   UNIQUE KEY `GroupID` (`GroupID`,`RoleID`,`AgentID`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 
 -- --------------------------------------------------------
 
@@ -75,7 +61,7 @@ CREATE TABLE `osgroupmembership` (
   `ListInProfile` int(11) NOT NULL default '1',
   `AcceptNotices` int(11) NOT NULL default '1',
   PRIMARY KEY  (`GroupID`,`AgentID`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 
 -- --------------------------------------------------------
 
@@ -93,7 +79,7 @@ CREATE TABLE `osgroupnotice` (
   `BinaryBucket` text NOT NULL,
   PRIMARY KEY  (`GroupID`,`NoticeID`),
   KEY `Timestamp` (`Timestamp`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 
 -- --------------------------------------------------------
 
@@ -106,7 +92,7 @@ CREATE TABLE `osgrouprolemembership` (
   `RoleID` varchar(128) NOT NULL default '',
   `AgentID` varchar(128) NOT NULL default '',
   PRIMARY KEY  (`GroupID`,`RoleID`,`AgentID`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
 
 -- --------------------------------------------------------
 
@@ -122,4 +108,4 @@ CREATE TABLE `osrole` (
   `Title` varchar(255) NOT NULL default '',
   `Powers` bigint(20) unsigned NOT NULL default '0',
   PRIMARY KEY  (`GroupID`,`RoleID`)
-) TYPE=MyISAM;
+) ENGINE=MyISAM;
